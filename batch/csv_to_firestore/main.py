@@ -8,7 +8,7 @@ def run():
     try:
         raw = extract("../../data/OnlineRetail.csv")
         aggregated = transform(raw)
-        load(aggregated, "127.0.0.1:8082", "demo-event-app")
+        load(aggregated, "192.168.1.100:8082", "demo-event-app")
     except Exception as e:
         print(e)
 

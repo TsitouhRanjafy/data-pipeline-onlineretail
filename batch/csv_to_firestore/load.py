@@ -48,4 +48,4 @@ def load(df: pd.DataFrame, firestore_host: str, project_id: str):
     total_loaded = load_batch_to_firestore(df, client)
     print(f"✅ {total_loaded} row loaded")
 
-    firebase_admin.delete_app(app)
+    # firebase_admin.delete_app(app)
