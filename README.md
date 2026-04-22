@@ -4,9 +4,13 @@ Ce projet implémente un pipeline ETL (Extract - Transform - Load) simple pour t
 
 ## Objectif
 
-Transformer les données brutes de ventes en un format propre et enrichi, prêt à être chargé dans une base de données analytics.
+- Transformer les données brutes de ventes en un format propre et enrichi, prêt à être chargé dans une base de données analytics.
+
+- Migrer les données depuis firestore vers Postgresql afin de faire des requêt complexes pour l'analytics.
 
 ## Structure du Pipeline
+
+## `CSV TO FIRESTORE (BATCH)`
 
 Le pipeline est composé de trois étapes principales :
 
@@ -55,3 +59,9 @@ Les transformations appliquées sont les suivantes :
 ```bash
 pip install pandas firebase-admin
 ```
+
+## `FIRESTORE TO POSTGRESQL (STREAM)`
+
+
+
+
