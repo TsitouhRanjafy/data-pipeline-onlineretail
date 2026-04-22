@@ -54,13 +54,67 @@ Les transformations appliquées sont les suivantes :
 
 ---
 
+## `FIRESTORE TO POSTGRESQL (STREAM)`
+
+Ce pipeline secondaire écoute en temps réel les modifications dans Firestore et synchronise les données vers une base PostgreSQL pour permettre des analyses complexes.
+
+### 1. Extract (Streaming)
+- Utilisation de `on_snapshot()` du SDK Firestore pour écouter les événements (`ADDED`, `MODIFIED`, `DELETE`, `UPDATE`).
+- Validation automatique de l'intégrité des documents avant traitement.
+- Connexion configurée pour le **Firestore Emulator**.
+
+### 2. Transform
+- Mapping des champs Firestore vers le schéma relationnel PostgreSQL.
+- Enrichissement des données avec :
+    - `processed_at` : Timestamp du traitement par le pipeline.
+    - `change_type` : Type d'événement Firestore (ex: ADDED).
+- Conversion des types de données (Decimal, Timestamps).
+
+### 3. Load (PostgreSQL)
+- Utilisation d'un **pool de connexions** (`ThreadedConnectionPool`) pour la performance.
+- Insertion directe dans la table `orders`.
+- Gestion des transactions avec rollback en cas d'erreur.
+
+### 4. Orchestration avec FastAPI
+Le pipeline est encapsulé dans une application **FastAPI** :
+- Le streaming démarre automatiquement au lancement du serveur via l'événement `lifespan`.
+- Un endpoint `/status` permet de vérifier l'état de santé de la connexion.
+
+---
+
+## Code — Fonctions principales (Streaming)
+
+| Fonction | Rôle |
+|---|---|
+| `start_extract_streaming()` | Initialise l'écouteur (listener) Firestore |
+| `on_snapshot(col_snapshot, changes, ...)` | Callback traitant chaque changement de document |
+| `transform(doc, change_type)` | Prépare le dictionnaire pour l'insertion SQL |
+| `load(record)` | Exécute l'INSERT dans PostgreSQL via le pool |
+
+---
+
 ## Pré-requis
 
 ```bash
-pip install pandas firebase-admin
+pip install pandas firebase-admin fastapi psycopg2-binary
 ```
 
-## `FIRESTORE TO POSTGRESQL (STREAM)`
+### Configuration PostgreSQL
+Le schéma de la table doit être créé au préalable en utilisant le fichier `streaming/firestore_to_postgresql/orders_schema.sql`.
+
+## Lancement
+
+### 1. Démarrer le Batch (CSV -> Firestore)
+```bash
+cd batch/csv_to_firestore
+python main.py
+```
+
+### 2. Démarrer le Streaming (Firestore -> Postgres)
+```bash
+cd streaming/firestore_to_postgresql
+fastapi dev main.py
+```
 
 
 
